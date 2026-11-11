@@ -1,0 +1,33 @@
+# Build Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# Journaux et fichiers temporaires
+*.log
+*.tmp
+logs/
+
+# Supports de cours et notes de travail
+*.pdf
+help.txt
+
+# Donnees locales d'Axon Server lance hors Docker
+/axonserver.properties
+/data/
+/events/
+
+# Fichiers generes par les extensions de l'IDE
+.github/modernize/
+
+# Systeme
+.DS_Store
