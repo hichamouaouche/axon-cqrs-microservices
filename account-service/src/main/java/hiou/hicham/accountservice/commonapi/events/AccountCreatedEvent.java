@@ -1,5 +1,7 @@
 package hiou.hicham.accountservice.commonapi.events;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import hiou.hicham.accountservice.commonapi.enums.AccountStatus;
 import lombok.Getter;
 import lombok.ToString;
@@ -16,11 +18,12 @@ public class AccountCreatedEvent extends BaseEvent<String> {
     private final double balance;
     private final AccountStatus status;
 
-    public AccountCreatedEvent(String id,
-                               String customerName,
-                               String currency,
-                               double balance,
-                               AccountStatus status) {
+    @JsonCreator
+    public AccountCreatedEvent(@JsonProperty("id") String id,
+                               @JsonProperty("customerName") String customerName,
+                               @JsonProperty("currency") String currency,
+                               @JsonProperty("balance") double balance,
+                               @JsonProperty("status") AccountStatus status) {
         super(id);
         this.customerName = customerName;
         this.currency = currency;

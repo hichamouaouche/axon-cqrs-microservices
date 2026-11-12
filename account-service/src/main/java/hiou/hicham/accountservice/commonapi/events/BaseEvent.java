@@ -8,6 +8,8 @@ import lombok.ToString;
  * <p>
  * Un evenement est un fait qui s'est deja produit : il est donc immuable et auto-descriptif.
  * Son nom est au passe (AccountCreatedEvent, AccountCreditedEvent, ...).
+ * Les evenements sont serialises en JSON dans l'Event Store, les annotations Jackson
+ * portees par les constructeurs des sous-classes garantissent la relecture du payload.
  *
  * @param <T> type de l'identifiant de l'agregat concerne
  */
