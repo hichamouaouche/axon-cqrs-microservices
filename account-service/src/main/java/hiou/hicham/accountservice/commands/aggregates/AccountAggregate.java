@@ -1,8 +1,13 @@
 package hiou.hicham.accountservice.commands.aggregates;
 
 import hiou.hicham.accountservice.commonapi.commands.AddAccountCommand;
+import hiou.hicham.accountservice.commonapi.commands.CreditAccountCommand;
+import hiou.hicham.accountservice.commonapi.commands.DebitAccountCommand;
 import hiou.hicham.accountservice.commonapi.enums.AccountStatus;
 import hiou.hicham.accountservice.commonapi.events.AccountCreatedEvent;
+import hiou.hicham.accountservice.commonapi.events.AccountCreditedEvent;
+import hiou.hicham.accountservice.commonapi.events.AccountDebitedEvent;
+import hiou.hicham.accountservice.commands.exceptions.InsufficientBalanceException;
 import hiou.hicham.accountservice.commands.exceptions.NegativeAmountException;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
@@ -62,6 +67,36 @@ public class AccountAggregate {
         ));
     }
 
+    @CommandHandler
+    public void handle(CreditAccountCommand command) {
+        log.info("CreditAccountCommand recue : {}", command);
+        if (command.getAmount() <= 0) {
+            throw new NegativeAmountException("Le montant du credit doit etre strictement positif");
+        }
+        AggregateLifecycle.apply(new AccountCreditedEvent(
+                command.getId(),
+                command.getCurrency(),
+                command.getAmount()
+        ));
+    }
+
+    @CommandHandler
+    public void handle(DebitAccountCommand command) {
+        log.info("DebitAccountCommand recue : {}", command);
+        if (command.getAmount() <= 0) {
+            throw new NegativeAmountException("Le montant du debit doit etre strictement positif");
+        }
+        if (command.getAmount() > this.balance) {
+            throw new InsufficientBalanceException(
+                    "Solde insuffisant : solde = " + this.balance + ", montant demande = " + command.getAmount());
+        }
+        AggregateLifecycle.apply(new AccountDebitedEvent(
+                command.getId(),
+                command.getCurrency(),
+                command.getAmount()
+        ));
+    }
+
     // ------------------------------------------------------------------
     // Fonction d'evolution : (State, Event) => State
     // ------------------------------------------------------------------
@@ -74,6 +109,18 @@ public class AccountAggregate {
         this.currency = event.getCurrency();
         this.balance = event.getBalance();
         this.status = event.getStatus();
+    }
+
+    @EventSourcingHandler
+    public void on(AccountCreditedEvent event) {
+        log.info("AccountCreditedEvent rejoue");
+        this.balance += event.getAmount();
+    }
+
+    @EventSourcingHandler
+    public void on(AccountDebitedEvent event) {
+        log.info("AccountDebitedEvent rejoue");
+        this.balance -= event.getAmount();
     }
 
 }
