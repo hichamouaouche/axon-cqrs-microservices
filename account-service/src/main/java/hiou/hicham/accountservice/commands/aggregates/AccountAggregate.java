@@ -3,10 +3,14 @@ package hiou.hicham.accountservice.commands.aggregates;
 import hiou.hicham.accountservice.commonapi.commands.AddAccountCommand;
 import hiou.hicham.accountservice.commonapi.commands.CreditAccountCommand;
 import hiou.hicham.accountservice.commonapi.commands.DebitAccountCommand;
+import hiou.hicham.accountservice.commonapi.commands.UpdateAccountStatusCommand;
 import hiou.hicham.accountservice.commonapi.enums.AccountStatus;
+import hiou.hicham.accountservice.commonapi.events.AccountActivatedEvent;
 import hiou.hicham.accountservice.commonapi.events.AccountCreatedEvent;
 import hiou.hicham.accountservice.commonapi.events.AccountCreditedEvent;
 import hiou.hicham.accountservice.commonapi.events.AccountDebitedEvent;
+import hiou.hicham.accountservice.commonapi.events.AccountStatusUpdatedEvent;
+import hiou.hicham.accountservice.commands.exceptions.AccountNotActivatedException;
 import hiou.hicham.accountservice.commands.exceptions.InsufficientBalanceException;
 import hiou.hicham.accountservice.commands.exceptions.NegativeAmountException;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +77,7 @@ public class AccountAggregate {
         if (command.getAmount() <= 0) {
             throw new NegativeAmountException("Le montant du credit doit etre strictement positif");
         }
+        assertAccountIsActivated();
         AggregateLifecycle.apply(new AccountCreditedEvent(
                 command.getId(),
                 command.getCurrency(),
@@ -86,6 +91,7 @@ public class AccountAggregate {
         if (command.getAmount() <= 0) {
             throw new NegativeAmountException("Le montant du debit doit etre strictement positif");
         }
+        assertAccountIsActivated();
         if (command.getAmount() > this.balance) {
             throw new InsufficientBalanceException(
                     "Solde insuffisant : solde = " + this.balance + ", montant demande = " + command.getAmount());
@@ -94,6 +100,18 @@ public class AccountAggregate {
                 command.getId(),
                 command.getCurrency(),
                 command.getAmount()
+        ));
+    }
+
+    @CommandHandler
+    public void handle(UpdateAccountStatusCommand command) {
+        log.info("UpdateAccountStatusCommand recue : {}", command);
+        if (command.getStatus() == null) {
+            throw new IllegalArgumentException("Le nouveau statut est obligatoire");
+        }
+        AggregateLifecycle.apply(new AccountStatusUpdatedEvent(
+                command.getId(),
+                command.getStatus()
         ));
     }
 
@@ -109,6 +127,15 @@ public class AccountAggregate {
         this.currency = event.getCurrency();
         this.balance = event.getBalance();
         this.status = event.getStatus();
+        // Le compte est active automatiquement apres sa creation : la decision
+        // d'agir sur soi-meme est exprimee par un nouvel evenement.
+        AggregateLifecycle.apply(new AccountActivatedEvent(event.getId(), AccountStatus.ACTIVATED));
+    }
+
+    @EventSourcingHandler
+    public void on(AccountActivatedEvent event) {
+        log.info("AccountActivatedEvent rejoue");
+        this.status = event.getStatus();
     }
 
     @EventSourcingHandler
@@ -123,4 +150,15 @@ public class AccountAggregate {
         this.balance -= event.getAmount();
     }
 
+    @EventSourcingHandler
+    public void on(AccountStatusUpdatedEvent event) {
+        log.info("AccountStatusUpdatedEvent rejoue");
+        this.status = event.getStatus();
+    }
+
+    private void assertAccountIsActivated() {
+        if (this.status != AccountStatus.ACTIVATED) {
+            throw new AccountNotActivatedException("Le compte " + this.accountId + " n'est pas actif (statut = " + this.status + ")");
+        }
+    }
 }
