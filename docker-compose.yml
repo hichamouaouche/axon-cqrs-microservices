@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Infrastructure du projet : base de donnees PostgreSQL et son administration.
+# ---------------------------------------------------------------------------
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: accounts-postgres
+    environment:
+      POSTGRES_DB: accounts_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d accounts_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:8.12
+    container_name: accounts-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@enset.ma
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "8888:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
