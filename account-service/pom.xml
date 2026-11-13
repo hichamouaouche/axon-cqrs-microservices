@@ -43,6 +43,13 @@
             </exclusions>
         </dependency>
 
+        <!-- Base de donnees de lecture -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Base de donnees de developpement -->
         <dependency>
             <groupId>com.h2database</groupId>
