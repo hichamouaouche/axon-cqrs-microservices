@@ -9,6 +9,8 @@ import hiou.hicham.accountservice.commonapi.dtos.CreditAccountRequestDTO;
 import hiou.hicham.accountservice.commonapi.dtos.DebitAccountRequestDTO;
 import hiou.hicham.accountservice.commonapi.dtos.StoredEventDTO;
 import hiou.hicham.accountservice.commonapi.dtos.UpdateAccountStatusRequestDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -37,6 +39,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @RestController
 @RequestMapping("/commands/accounts")
+@Tag(name = "Account Commands", description = "Cote commande : creation et operations sur les comptes")
 @Slf4j
 public class AccountCommandController {
 
@@ -49,6 +52,7 @@ public class AccountCommandController {
     }
 
     @PostMapping("/create")
+    @Operation(summary = "Creer un nouveau compte bancaire")
     public CompletableFuture<String> createAccount(@RequestBody @Valid CreateAccountRequestDTO request) {
         return commandGateway.send(new AddAccountCommand(
                 UUID.randomUUID().toString(),
@@ -59,6 +63,7 @@ public class AccountCommandController {
     }
 
     @PutMapping("/credit")
+    @Operation(summary = "Crediter un compte")
     public CompletableFuture<String> creditAccount(@RequestBody @Valid CreditAccountRequestDTO request) {
         return commandGateway.send(new CreditAccountCommand(
                 request.getAccountId(),
@@ -68,6 +73,7 @@ public class AccountCommandController {
     }
 
     @PutMapping("/debit")
+    @Operation(summary = "Debiter un compte")
     public CompletableFuture<String> debitAccount(@RequestBody @Valid DebitAccountRequestDTO request) {
         return commandGateway.send(new DebitAccountCommand(
                 request.getAccountId(),
@@ -77,6 +83,7 @@ public class AccountCommandController {
     }
 
     @PutMapping("/status")
+    @Operation(summary = "Modifier le statut d'un compte")
     public CompletableFuture<String> updateStatus(@RequestBody @Valid UpdateAccountStatusRequestDTO request) {
         return commandGateway.send(new UpdateAccountStatusCommand(
                 request.getAccountId(),
@@ -85,6 +92,7 @@ public class AccountCommandController {
     }
 
     @GetMapping("/eventStore/{accountId}")
+    @Operation(summary = "Lire la sequence d'evenements d'un agregat dans l'Event Store")
     public List<StoredEventDTO> eventStore(@PathVariable String accountId) {
         return eventStore.readEvents(accountId)
                 .asStream()
