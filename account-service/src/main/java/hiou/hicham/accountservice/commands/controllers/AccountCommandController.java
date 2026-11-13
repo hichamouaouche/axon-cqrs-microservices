@@ -1,7 +1,13 @@
 package hiou.hicham.accountservice.commands.controllers;
 
 import hiou.hicham.accountservice.commonapi.commands.AddAccountCommand;
+import hiou.hicham.accountservice.commonapi.commands.CreditAccountCommand;
+import hiou.hicham.accountservice.commonapi.commands.DebitAccountCommand;
+import hiou.hicham.accountservice.commonapi.commands.UpdateAccountStatusCommand;
 import hiou.hicham.accountservice.commonapi.dtos.CreateAccountRequestDTO;
+import hiou.hicham.accountservice.commonapi.dtos.CreditAccountRequestDTO;
+import hiou.hicham.accountservice.commonapi.dtos.DebitAccountRequestDTO;
+import hiou.hicham.accountservice.commonapi.dtos.UpdateAccountStatusRequestDTO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -10,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,6 +51,32 @@ public class AccountCommandController {
                 request.getCustomerName(),
                 request.getCurrency(),
                 request.getInitialBalance()
+        ));
+    }
+
+    @PutMapping("/credit")
+    public CompletableFuture<String> creditAccount(@RequestBody @Valid CreditAccountRequestDTO request) {
+        return commandGateway.send(new CreditAccountCommand(
+                request.getAccountId(),
+                request.getCurrency(),
+                request.getAmount()
+        ));
+    }
+
+    @PutMapping("/debit")
+    public CompletableFuture<String> debitAccount(@RequestBody @Valid DebitAccountRequestDTO request) {
+        return commandGateway.send(new DebitAccountCommand(
+                request.getAccountId(),
+                request.getCurrency(),
+                request.getAmount()
+        ));
+    }
+
+    @PutMapping("/status")
+    public CompletableFuture<String> updateStatus(@RequestBody @Valid UpdateAccountStatusRequestDTO request) {
+        return commandGateway.send(new UpdateAccountStatusCommand(
+                request.getAccountId(),
+                request.getStatus()
         ));
     }
 
