@@ -13,6 +13,7 @@ import hiou.hicham.accountservice.query.repositories.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
  * les evenements depuis le debut.
  */
 @Service
+@ProcessingGroup("account-projection")
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
