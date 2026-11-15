@@ -1,8 +1,14 @@
 package hiou.hicham.accountservice.query.services;
 
+import hiou.hicham.accountservice.commonapi.enums.OperationType;
 import hiou.hicham.accountservice.commonapi.events.AccountActivatedEvent;
 import hiou.hicham.accountservice.commonapi.events.AccountCreatedEvent;
+import hiou.hicham.accountservice.commonapi.events.AccountCreditedEvent;
+import hiou.hicham.accountservice.commonapi.events.AccountDebitedEvent;
+import hiou.hicham.accountservice.commonapi.events.AccountStatusUpdatedEvent;
 import hiou.hicham.accountservice.query.entities.Account;
+import hiou.hicham.accountservice.query.entities.AccountOperation;
+import hiou.hicham.accountservice.query.repositories.AccountOperationRepository;
 import hiou.hicham.accountservice.query.repositories.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountEventHandler {
 
     private final AccountRepository accountRepository;
+    private final AccountOperationRepository accountOperationRepository;
 
     @EventHandler
     public void on(AccountCreatedEvent event, EventMessage<AccountCreatedEvent> message) {
@@ -43,6 +50,47 @@ public class AccountEventHandler {
     @EventHandler
     public void on(AccountActivatedEvent event) {
         log.info("Projection : AccountActivatedEvent recu pour le compte {}", event.getId());
+        accountRepository.findById(event.getId()).ifPresent(account -> {
+            account.setStatus(event.getStatus());
+            accountRepository.save(account);
+        });
+    }
+
+    @EventHandler
+    public void on(AccountCreditedEvent event, EventMessage<AccountCreditedEvent> message) {
+        log.info("Projection : AccountCreditedEvent recu pour le compte {}", event.getId());
+        Account account = accountRepository.findById(event.getId())
+                .orElseThrow(() -> new IllegalStateException("Compte introuvable dans la projection : " + event.getId()));
+        AccountOperation operation = AccountOperation.builder()
+                .account(account)
+                .amount(event.getAmount())
+                .type(OperationType.CREDIT)
+                .operationDate(message.getTimestamp())
+                .build();
+        accountOperationRepository.save(operation);
+        account.setBalance(account.getBalance() + event.getAmount());
+        accountRepository.save(account);
+    }
+
+    @EventHandler
+    public void on(AccountDebitedEvent event, EventMessage<AccountDebitedEvent> message) {
+        log.info("Projection : AccountDebitedEvent recu pour le compte {}", event.getId());
+        Account account = accountRepository.findById(event.getId())
+                .orElseThrow(() -> new IllegalStateException("Compte introuvable dans la projection : " + event.getId()));
+        AccountOperation operation = AccountOperation.builder()
+                .account(account)
+                .amount(event.getAmount())
+                .type(OperationType.DEBIT)
+                .operationDate(message.getTimestamp())
+                .build();
+        accountOperationRepository.save(operation);
+        account.setBalance(account.getBalance() - event.getAmount());
+        accountRepository.save(account);
+    }
+
+    @EventHandler
+    public void on(AccountStatusUpdatedEvent event) {
+        log.info("Projection : AccountStatusUpdatedEvent recu pour le compte {}", event.getId());
         accountRepository.findById(event.getId()).ifPresent(account -> {
             account.setStatus(event.getStatus());
             accountRepository.save(account);
