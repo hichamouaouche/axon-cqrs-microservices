@@ -2,9 +2,11 @@ package hiou.hicham.accountservice.query.services;
 
 import hiou.hicham.accountservice.commonapi.dtos.AccountResponseDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountStatementDTO;
+import hiou.hicham.accountservice.commonapi.dtos.AccountWatchEventDTO;
 import hiou.hicham.accountservice.commonapi.queries.GetAccountByIdQuery;
 import hiou.hicham.accountservice.commonapi.queries.GetAccountStatementQuery;
 import hiou.hicham.accountservice.commonapi.queries.GetAllAccountsQuery;
+import hiou.hicham.accountservice.commonapi.queries.WatchAccountQuery;
 import hiou.hicham.accountservice.query.entities.Account;
 import hiou.hicham.accountservice.query.entities.AccountOperation;
 import hiou.hicham.accountservice.query.mappers.AccountMapper;
@@ -56,6 +58,25 @@ public class AccountQueryHandler {
         return new AccountStatementDTO(
                 accountMapper.toAccountDTO(account),
                 accountMapper.toOperationDTOList(operations)
+        );
+    }
+
+    /**
+     * Resultat initial de la subscription query : l'etat du compte au moment de l'abonnement.
+     * Les mises a jour suivantes sont emises par le QueryUpdateEmitter des Event Handlers.
+     */
+    @QueryHandler
+    public AccountWatchEventDTO on(WatchAccountQuery query) {
+        log.info("WatchAccountQuery recue pour le compte {}", query.accountId());
+        Account account = findAccount(query.accountId());
+        AccountOperation lastOperation =
+                accountOperationRepository.findTop1ByAccountIdOrderByOperationDateDesc(query.accountId());
+        return new AccountWatchEventDTO(
+                lastOperation != null ? lastOperation.getOperationDate() : account.getCreatedAt(),
+                account.getId(),
+                account.getBalance(),
+                lastOperation != null ? lastOperation.getType() : null,
+                lastOperation != null ? lastOperation.getAmount() : 0
         );
     }
 

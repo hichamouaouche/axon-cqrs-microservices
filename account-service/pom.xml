@@ -43,6 +43,16 @@
             </exclusions>
         </dependency>
 
+        <!-- Project Reactor : streaming des evenements en temps reel (SSE) -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
+
         <!-- Base de donnees de lecture -->
         <dependency>
             <groupId>org.postgresql</groupId>
