@@ -1,0 +1,51 @@
+### Creation d'un compte
+POST http://localhost:8083/commands/accounts/create
+Content-Type: application/json
+
+{
+  "customerName": "Hicham Ouaouche",
+  "currency": "MAD",
+  "initialBalance": 5400
+}
+
+### Credit du compte (remplacer l'identifiant par celui retourne ci-dessus)
+PUT http://localhost:8083/commands/accounts/credit
+Content-Type: application/json
+
+{
+  "accountId": "4288c701-5fc2-45d5-84bc-05dd9d23cace",
+  "currency": "MAD",
+  "amount": 8700
+}
+
+### Debit du compte
+PUT http://localhost:8083/commands/accounts/debit
+Content-Type: application/json
+
+{
+  "accountId": "4288c701-5fc2-45d5-84bc-05dd9d23cace",
+  "currency": "MAD",
+  "amount": 12000
+}
+
+### Debit refuse : solde insuffisant
+PUT http://localhost:8083/commands/accounts/debit
+Content-Type: application/json
+
+{
+  "accountId": "4288c701-5fc2-45d5-84bc-05dd9d23cace",
+  "currency": "MAD",
+  "amount": 9000000
+}
+
+### Suspension du compte
+PUT http://localhost:8083/commands/accounts/status
+Content-Type: application/json
+
+{
+  "accountId": "4288c701-5fc2-45d5-84bc-05dd9d23cace",
+  "status": "SUSPENDED"
+}
+
+### Sequence d'evenements de l'agregat dans l'Event Store
+GET http://localhost:8083/commands/accounts/eventStore/4288c701-5fc2-45d5-84bc-05dd9d23cace

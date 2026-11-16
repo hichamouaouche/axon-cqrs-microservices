@@ -1,0 +1,12 @@
+### Liste des comptes projetes
+GET http://localhost:8083/query/accounts
+
+### Consultation d'un compte
+GET http://localhost:8083/query/accounts/4288c701-5fc2-45d5-84bc-05dd9d23cace
+
+### Releve (historique des operations) d'un compte
+GET http://localhost:8083/query/accounts/4288c701-5fc2-45d5-84bc-05dd9d23cace/statement
+
+### Suivi temps reel des operations (Server-Sent Events)
+GET http://localhost:8083/query/accounts/4288c701-5fc2-45d5-84bc-05dd9d23cace/watch
+Accept: text/event-stream
