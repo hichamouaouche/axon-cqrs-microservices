@@ -44,12 +44,18 @@ services:
     image: dpage/pgadmin4:8.12
     container_name: accounts-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@enset.ma
+      # En mode desktop, pgAdmin travaille avec cet utilisateur interne :
+      # c'est lui qui recoit la connexion pre-enregistree de servers.json.
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: "False"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/accounts-servers.json
     ports:
       - "8888:80"
+    volumes:
+      # Connexion a la base de lecture deja enregistree au demarrage
+      - ./docker/pgadmin/servers.json:/pgadmin4/accounts-servers.json:ro
     depends_on:
       postgres:
         condition: service_healthy

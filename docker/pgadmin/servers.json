@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "accounts-postgres",
+      "Group": "account-service",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "accounts_db",
+      "Username": "postgres",
+      "SSLMode": "prefer",
+      "Comment": "Base de lecture du micro-service account-service"
+    }
+  }
+}
