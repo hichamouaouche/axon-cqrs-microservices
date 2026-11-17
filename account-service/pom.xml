@@ -33,14 +33,6 @@
         <dependency>
             <groupId>org.axonframework</groupId>
             <artifactId>axon-spring-boot-starter</artifactId>
-            <!-- Exclusion temporaire : on demarre avec l'Event Store local,
-                 Axon Server sera branche plus tard -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.axonframework</groupId>
-                    <artifactId>axon-server-connector</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Project Reactor : streaming des evenements en temps reel (SSE) -->
