@@ -1,5 +1,6 @@
 package hiou.hicham.accountservice.query.services;
 
+import hiou.hicham.accountservice.commonapi.dtos.AccountListDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountResponseDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountStatementDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountWatchEventDTO;
@@ -38,9 +39,9 @@ public class AccountQueryHandler {
     private final AccountMapper accountMapper;
 
     @QueryHandler
-    public List<AccountResponseDTO> on(GetAllAccountsQuery query) {
+    public AccountListDTO on(GetAllAccountsQuery query) {
         log.info("GetAllAccountsQuery recue");
-        return accountMapper.toAccountDTOList(accountRepository.findAll());
+        return new AccountListDTO(accountMapper.toAccountDTOList(accountRepository.findAll()));
     }
 
     @QueryHandler

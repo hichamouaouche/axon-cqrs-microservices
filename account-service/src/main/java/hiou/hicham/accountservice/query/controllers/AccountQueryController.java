@@ -1,5 +1,6 @@
 package hiou.hicham.accountservice.query.controllers;
 
+import hiou.hicham.accountservice.commonapi.dtos.AccountListDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountResponseDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountStatementDTO;
 import hiou.hicham.accountservice.commonapi.dtos.AccountWatchEventDTO;
@@ -46,7 +47,8 @@ public class AccountQueryController {
     @Operation(summary = "Lister tous les comptes")
     public CompletableFuture<List<AccountResponseDTO>> accounts() {
         return queryGateway.query(new GetAllAccountsQuery(),
-                ResponseTypes.multipleInstancesOf(AccountResponseDTO.class));
+                        ResponseTypes.instanceOf(AccountListDTO.class))
+                .thenApply(AccountListDTO::accounts);
     }
 
     @GetMapping("/{accountId}")
