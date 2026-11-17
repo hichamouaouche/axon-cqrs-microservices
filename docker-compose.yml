@@ -1,7 +1,27 @@
 # ---------------------------------------------------------------------------
-# Infrastructure du projet : base de donnees PostgreSQL et son administration.
+# Infrastructure du projet : Event Store distribue (Axon Server),
+# base de lecture (PostgreSQL) et son administration (pgAdmin).
 # ---------------------------------------------------------------------------
 services:
+
+  axon-server:
+    image: axoniq/axonserver:2024.1.4-jdk-17
+    container_name: axon-server
+    hostname: axon-server
+    environment:
+      AXONIQ_AXONSERVER_STANDALONE: "true"
+      AXONIQ_AXONSERVER_DEVMODE_ENABLED: "true"
+    ports:
+      - "8024:8024"   # console d'administration HTTP
+      - "8124:8124"   # bus de messages gRPC
+    volumes:
+      - axon-data:/axonserver/data
+      - axon-events:/axonserver/events
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8024/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   postgres:
     image: postgres:16-alpine
@@ -35,4 +55,6 @@ services:
         condition: service_healthy
 
 volumes:
+  axon-data:
+  axon-events:
   postgres-data:
