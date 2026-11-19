@@ -728,9 +728,37 @@ Tous les endpoints sont documentes et testables depuis http://localhost:8083/swa
 
 ![Swagger UI](docs/screenshots/02-swagger-ui.png)
 
-Execution d'une creation de compte directement depuis Swagger, avec la reponse du serveur :
+J'ai repris le scenario complet directement depuis Swagger, sur un seul et meme compte, pour
+verifier le cote commande et le cote lecture bout en bout.
 
-![Execution d'une commande depuis Swagger](docs/screenshots/06-swagger-execution.png)
+**1. Creation du compte.** La commande renvoie l'identifiant de l'agregat
+`89b0b916-6da2-4c6e-8971-f9c61302974c`, qui sert pour toutes les etapes suivantes.
+
+![Creation d'un compte depuis Swagger](docs/screenshots/06-swagger-execution.png)
+
+**2. Credit de 8700 MAD.** Reponse HTTP 200 : la commande a ete acceptee par l'agregat et
+l'evenement a ete ecrit dans l'Event Store.
+
+![Credit d'un compte depuis Swagger](docs/screenshots/07-swagger-credit.png)
+
+**3. Debit de 9 000 000 MAD.** Reponse HTTP 400 avec le message
+`Solde insuffisant : solde = 14100.0, montant demande = 9000000.0`. Le solde de 14 100 affiche
+dans l'erreur est celui que l'agregat vient de reconstruire a partir de ses evenements
+(5400 a la creation + 8700 de credit), ce qui prouve que la regle metier s'appuie bien sur
+l'etat rejoue et non sur une valeur lue en base.
+
+![Debit refuse depuis Swagger](docs/screenshots/08-swagger-debit-refuse.png)
+
+**4. Releve du compte.** Le cote lecture renvoie le solde de 14 100 MAD et l'unique operation
+projetee : le debit refuse n'a laisse aucune trace, puisqu'aucun evenement n'a ete produit.
+
+![Releve d'un compte depuis Swagger](docs/screenshots/09-swagger-releve.png)
+
+**5. Sequence d'evenements de l'agregat.** Les trois evenements stockes apparaissent dans
+l'ordre, avec leur numero de sequence : `AccountCreatedEvent` (0), `AccountActivatedEvent` (1)
+et `AccountCreditedEvent` (2).
+
+![Event Store d'un agregat depuis Swagger](docs/screenshots/10-swagger-event-store.png)
 
 ### N. Console Axon Server
 
@@ -816,6 +844,7 @@ La connexion a la base de lecture est deja enregistree dans pgAdmin au demarrage
 | 11 | Flux SSE | 1 resultat initial + 2 mises a jour | OK |
 | 12 | Tables PostgreSQL | projection et tables Axon creees | OK |
 | 13 | Console Axon Server | service connecte, evenements visibles | OK |
+| 14 | Scenario complet depuis Swagger UI | creation, credit, debit refuse, releve, Event Store | OK |
 
 ---
 
