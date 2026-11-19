@@ -216,7 +216,7 @@
         show(await response.json());
     }
 
-    function watch(accountId) {
+    async function watch(accountId) {
         document.getElementById('operationAccountId').value = accountId;
         if (eventSource) {
             eventSource.close();
@@ -224,32 +224,70 @@
         if (chart) {
             chart.destroy();
         }
+
+        // Historique : le solde est reconstruit a partir du releve des operations,
+        // exactement comme l'agregat reconstruit son etat depuis l'Event Store.
+        const response = await fetch(QUERIES + '/' + accountId + '/statement');
+        const statement = await response.json();
+        const labels = ['ouverture'];
+        const series = [statement.operations.reduce(
+            (balance, operation) => operation.type === 'CREDIT'
+                ? balance - operation.amount
+                : balance + operation.amount,
+            statement.account.balance)];
+        statement.operations.forEach(operation => {
+            labels.push(new Date(operation.operationDate).toLocaleTimeString());
+            series.push(operation.type === 'CREDIT'
+                ? series[series.length - 1] + operation.amount
+                : series[series.length - 1] - operation.amount);
+        });
+
         chart = new Chart(document.getElementById('balanceChart'), {
             type: 'line',
             data: {
-                labels: [],
+                labels: labels,
                 datasets: [{
-                    label: 'Solde du compte ' + accountId.substring(0, 8),
-                    data: [],
+                    label: 'Solde du compte ' + accountId.substring(0, 8) + ' (' + statement.account.currency + ')',
+                    data: series,
                     borderColor: '#1c3d5a',
                     backgroundColor: 'rgba(28,61,90,.12)',
                     tension: .25,
-                    fill: true
+                    fill: true,
+                    pointRadius: 3
                 }]
             },
-            options: {scales: {y: {beginAtZero: true}}}
+            options: {
+                plugins: {legend: {display: true}},
+                scales: {y: {beginAtZero: true}}
+            }
         });
 
+        // Temps reel : chaque nouvelle operation est poussee par le serveur (SSE).
+        let firstMessage = true;
         eventSource = new EventSource(QUERIES + '/' + accountId + '/watch');
         eventSource.onmessage = message => {
+            if (firstMessage) {
+                // Le premier message est le resultat initial de la subscription query,
+                // deja present dans l'historique reconstruit ci-dessus.
+                firstMessage = false;
+                return;
+            }
             const watchEvent = JSON.parse(message.data);
             chart.data.labels.push(new Date(watchEvent.instant).toLocaleTimeString());
             chart.data.datasets[0].data.push(watchEvent.currentBalance);
             chart.update();
+            loadAccounts();
         };
     }
 
-    loadAccounts();
+    // Un identifiant passe dans l'URL (?watch=...) ouvre directement le suivi du compte.
+    (async function start() {
+        await loadAccounts();
+        const requested = new URLSearchParams(window.location.search).get('watch');
+        if (requested) {
+            watch(requested);
+        }
+    })();
 </script>
 </body>
 </html>
