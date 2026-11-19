@@ -732,7 +732,7 @@ J'ai repris le scenario complet directement depuis Swagger, sur un seul et meme 
 verifier le cote commande et le cote lecture bout en bout.
 
 **1. Creation du compte.** La commande renvoie l'identifiant de l'agregat
-`89b0b916-6da2-4c6e-8971-f9c61302974c`, qui sert pour toutes les etapes suivantes.
+`fabae812-857d-4843-883e-32bcb4ecaf8d`, qui sert pour toutes les etapes suivantes.
 
 ![Creation d'un compte depuis Swagger](docs/screenshots/06-swagger-execution.png)
 
@@ -801,7 +801,9 @@ select id, customer_name, currency, balance, status from accounts order by creat
 --------------------------------------+----------------------+----------+---------+-----------
  440091af-d2b2-4fc5-a1a2-645073cfbfd6 | Hicham Ouaouche      | MAD      |    2100 | SUSPENDED
  2b0f1129-99c1-4ca0-98ce-09d15cc23a15 | Service Comptabilite | MAD      |   33200 | ACTIVATED
- 89b0b916-6da2-4c6e-8971-f9c61302974c | Hicham Ouaouche      | MAD      |    5400 | ACTIVATED
+ 89b0b916-6da2-4c6e-8971-f9c61302974c | Hicham Ouaouche      | MAD      |   14100 | ACTIVATED
+ f25780dc-8266-43c4-82c7-a031e3cb6909 | Hicham Ouaouche      | MAD      |   14100 | ACTIVATED
+ fabae812-857d-4843-883e-32bcb4ecaf8d | Hicham Ouaouche      | MAD      |   14100 | ACTIVATED
 ```
 
 ```sql
